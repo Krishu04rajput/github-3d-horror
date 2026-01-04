@@ -1,8 +1,9 @@
-// SCENE
+// =====================
+// BASIC SETUP
+// =====================
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x000000, 2, 15);
+scene.fog = new THREE.Fog(0x000000, 10, 50);
 
-// CAMERA
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -10,96 +11,115 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-// RENDERER
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000);
 document.body.appendChild(renderer.domElement);
 
+// =====================
+// LIGHTS
+// =====================
+scene.add(new THREE.AmbientLight(0x404040, 0.6));
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
+dirLight.position.set(10, 20, 10);
+scene.add(dirLight);
+
+// =====================
 // FLOOR
+// =====================
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(50, 50),
-  new THREE.MeshStandardMaterial({ color: 0x111111 })
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.MeshStandardMaterial({ color: 0x333333 })
 );
 floor.rotation.x = -Math.PI / 2;
 scene.add(floor);
 
+// =====================
 // WALLS
-const wallMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-for (let i = -10; i <= 10; i += 5) {
+// =====================
+const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
+for (let i = -20; i <= 20; i += 10) {
   const wall = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 3, 10),
-    wallMat
+    new THREE.BoxGeometry(3, 5, 20),
+    wallMaterial
   );
-  wall.position.set(i, 1.5, -10);
+  wall.position.set(i, 2.5, -20);
   scene.add(wall);
 }
 
-// LIGHT (AMBIENT)
-scene.add(new THREE.AmbientLight(0x202020));
-
-// FLASHLIGHT
-const flashlight = new THREE.SpotLight(0xffffff, 2, 15, Math.PI / 6);
-flashlight.position.set(0, 1.6, 0);
-flashlight.target.position.set(0, 1.6, -1);
-scene.add(flashlight);
-scene.add(flashlight.target);
-
+// =====================
 // PLAYER
-camera.position.set(0, 1.6, 5);
+// =====================
+camera.position.set(0, 1.7, 15);
+scene.add(camera);
 
+// =====================
+// FLASHLIGHT
+// =====================
+const flashlight = new THREE.SpotLight(0xffffff, 4, 30, Math.PI / 6, 0.5);
+flashlight.position.set(0, 0, 0);
+camera.add(flashlight);
+
+const flashlightTarget = new THREE.Object3D();
+flashlightTarget.position.set(0, 0, -1);
+camera.add(flashlightTarget);
+flashlight.target = flashlightTarget;
+
+let flashlightOn = true;
+
+// =====================
 // CONTROLS
-let keys = {};
+// =====================
+const keys = {};
 document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
 document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
-// MOUSE LOOK
+// POINTER LOCK
 document.body.addEventListener("click", () => {
   document.body.requestPointerLock();
 });
 
+// MOUSE LOOK
 let yaw = 0, pitch = 0;
 document.addEventListener("mousemove", e => {
   if (document.pointerLockElement === document.body) {
     yaw -= e.movementX * 0.002;
     pitch -= e.movementY * 0.002;
-    pitch = Math.max(-Math.PI/2, Math.min(Math.PI/2, pitch));
+    pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
     camera.rotation.set(pitch, yaw, 0);
   }
 });
 
 // FLASHLIGHT TOGGLE
-let lightOn = true;
 document.addEventListener("keydown", e => {
   if (e.key.toLowerCase() === "f") {
-    lightOn = !lightOn;
-    flashlight.intensity = lightOn ? 2 : 0;
+    flashlightOn = !flashlightOn;
+    flashlight.visible = flashlightOn;
   }
 });
 
+// =====================
 // GAME LOOP
+// =====================
 function animate() {
   requestAnimationFrame(animate);
 
-  const speed = 0.05;
+  const speed = 0.1;
   if (keys["w"]) camera.translateZ(-speed);
   if (keys["s"]) camera.translateZ(speed);
   if (keys["a"]) camera.translateX(-speed);
   if (keys["d"]) camera.translateX(speed);
-
-  flashlight.position.copy(camera.position);
-  flashlight.target.position.set(
-    camera.position.x + Math.sin(yaw),
-    camera.position.y + pitch,
-    camera.position.z - Math.cos(yaw)
-  );
 
   renderer.render(scene, camera);
 }
 
 animate();
 
+// =====================
 // RESIZE
+// =====================
 window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
