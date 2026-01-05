@@ -1,16 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Project X - Horror</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Project X – Horror Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      font-family: monospace;
+    }
+
+    #hud {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: white;
+      z-index: 10;
+      font-size: 14px;
+    }
+
+    #crosshair {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 20px;
+      user-select: none;
+    }
+  </style>
 </head>
 <body>
-  <div id="ui">
-    <div id="hp">HP: 100</div>
-    <div id="msg"></div>
-  </div>
 
-  <script type="module" src="main.js"></script>
+  <div id="hud">HP: <span id="hp">100</span></div>
+  <div id="crosshair">+</div>
+
+  <!-- MUST be module -->
+  <script type="module" src="./main.js"></script>
+
 </body>
 </html>
